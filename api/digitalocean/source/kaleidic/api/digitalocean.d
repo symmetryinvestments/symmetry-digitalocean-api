@@ -9,7 +9,7 @@ import std.traits:EnumMembers;
 import std.array:array,appender;
 import std.format:format;
 import std.variant:Algebraic;
-import kaleidic.auth.digitalocean; // replace by your own key
+import kaleidic.auth;
 import kaleidic.helper.prettyjson;
 
 /**
