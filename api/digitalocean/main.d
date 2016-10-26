@@ -1,5 +1,5 @@
 import kaleidic.api.digitalocean;
-import kaleidic.auth.digitalocean; // replace by your own key
+import kaleidic.auth; // replace by your own key
 import kaleidic.helper.prettyjson;
 import std.json;
 import std.stdio;
