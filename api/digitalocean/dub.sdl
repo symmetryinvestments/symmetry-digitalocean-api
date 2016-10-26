@@ -4,5 +4,18 @@ copyright "Copyright © 2015, Laeeth Isharc, Kaleidic Associates, and Digital Oc
 authors "Laeeth Isharc and Kaleidic Associates"
 targetType "library"
 dependency "kaleidic-auth" version="*"
+importPaths "../../auth/source"
 dependency "kaleidic-helper" version="*"
+importPaths "../../helper/source"
 libs "curl"
+
+configuration "library" {
+	sourceFiles "source/kaleidic/api/digitalocean.d"
+	targetType "library"
+}
+configuration "tests" {
+	sourceFiles "./main.d" "source/kaleidic/api/digitalocean.d"
+	targetType "executable"
+}
+
+
