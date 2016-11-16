@@ -4,9 +4,7 @@ copyright "Copyright © 2015, Laeeth Isharc, Kaleidic Associates, and Digital Oc
 authors "Laeeth Isharc and Kaleidic Associates"
 targetType "library"
 dependency "kaleidic-auth" version="*"
-importPaths "../../auth/source"
 dependency "kaleidic-helper" version="*"
-importPaths "../../helper/source"
 libs "curl"
 
 configuration "library" {
