@@ -1,3 +1,48 @@
+/**
+
+    Digital Ocean API
+    2014,2015,2016,2017 by Laeeth Isharc and Kaleidic Associates Advisory Limited
+
+    ---
+        import kaleidic.api.digitalocean;
+        import kaleidic.auth.digitalocean; // replace by your own key
+        import kaleidic.helper.prettyjson;
+        import std.json;
+        import std.stdio;
+
+
+        void main(string[] args)
+        {
+            auto ocean=OceanAPI(OceanAPIKey);
+            auto result=Droplet.create( ocean,
+                                        "newemail.kaleidicassociates.com",
+                                        OceanRegion.lon1,
+                                        "1Gb",
+                                        OceanImageId("debian-8-x64"),
+                                        ["ab:21:7e:22:e5:4c:95:23:e9:aa:f8:59:be:5f:96:24"]);
+            writefln(result.prettyPrint);
+            auto actions=ocean.listDroplets;
+            writefln(actions.prettyPrint);
+        /*    auto droplet=ocean.findDroplet("hoelderlin.kaleidicassociates.com").result.retrieve;
+            writefln(droplet.prettyPrint);
+            auto keys=ocean.listKeys;
+            writefln(keys.prettyPrint);*/
+        }
+
+    ---
+
+    really not tested
+    so far: reasonable results for
+    listDomains
+    listDroplets
+    listSizes
+    listKeys
+    listImages
+    findDroplet
+    Droplet.retrieve
+*/
+
+///
 module kaleidic.api.digitalocean;
 import std.stdio;
 import std.json;
@@ -19,6 +64,7 @@ import kaleidic.helper.prettyjson;
     instances and creating 10,000 pricey new ones then it will not be my fault
 */
 
+///
 static this()
 {
     OceanRegions=[EnumMembers!OceanRegion].map!(a=>a.toString).array.assumeUnique;
@@ -78,6 +124,7 @@ static this()
     ];
 }
 
+///
 string joinUrl(string url, string endpoint)
 {
     enforce(url.length>0, "broken url");
@@ -85,14 +132,9 @@ string joinUrl(string url, string endpoint)
         url=url[0..$-1];
     return url~"/"~endpoint;
 }
-/**
-    auto __str__(self):
-        return b"<{:s} at {:#x}>".format(type(self).__name__, id(self))
 
-    auto __unicode__(self):
-        return "<{:s} at {:#x}>".format(type(self).__name__, id(self))
-*/
 
+///
 struct OceanAPI
 {
     string endpoint = "https://api.digitalocean.com/v2/";
@@ -109,6 +151,7 @@ struct OceanAPI
     }
 }
 
+///
 JSONValue request(OceanAPI api, string url, HTTP.Method method=HTTP.Method.get, JSONValue params=JSONValue(null))
 {
     enforce(api.token.length>0,"no token provided");
@@ -139,34 +182,37 @@ JSONValue request(OceanAPI api, string url, HTTP.Method method=HTTP.Method.get, 
 }
 
 
-// List all Actions
+/// List all Actions
 auto listActions(OceanAPI api)
 {
     return api.request("actions",HTTP.Method.get);
 }
 
-// retrieve existing Action
+/// retrieve existing Action
 auto retrieveAction(OceanAPI api, string id)
 {
     return api.request("actions/"~id, HTTP.Method.get);
 }
 
+///
 auto allNeighbours(OceanAPI api)
 {
     return api.request("reports/droplet_neighbors",HTTP.Method.get);
 }
 
+///
 auto listUpgrades(OceanAPI api)
 {
     return api.request("droplet_upgrades",HTTP.Method.get);    
 }
 
-// List all Domains (managed through Ocean DNS interface)
+/// List all Domains (managed through Ocean DNS interface)
 auto listDomains(OceanAPI api)
 {
     return api.request("domains", HTTP.Method.get);
 }
 
+///
 struct OceanDomain
 {
     OceanAPI api;
@@ -191,25 +237,25 @@ struct OceanDomain
     }
 }
 
-// Retrieve an existing Domain
+/// Retrieve an existing Domain
 auto get(OceanDomain domain)
 {
     return domain.request("domains/"~domain.id, HTTP.Method.get);
 }
 
- // Delete a Domain
+/// Delete a Domain
 auto del(OceanDomain domain)
 {
     return domain.request("domains/"~domain.id, HTTP.Method.del);
 }
 
-//  List all Domain Records
+///  List all Domain Records
 auto listDomainRecords(OceanDomain domain)
 {
     return domain.request(format("domains/%s/records",domain.id), HTTP.Method.get);
 }
 
-//  Create a new Domain Record
+/// Create a new Domain Record
 auto createRecord(OceanDomain domain, string rtype=null, string name=null, string data=null,
                          string priority=null, string port=null, string weight=null)
 {
@@ -229,21 +275,21 @@ auto createRecord(OceanDomain domain, string rtype=null, string name=null, strin
         format("domains/%s/records",domain.id), HTTP.Method.post, params);
 }
 
-//  Retrieve an existing Domain Record
+///  Retrieve an existing Domain Record
 auto getRecord(OceanDomain domain, string recordId)
 {
     return domain.request(
         format("domains/%s/records/%s",domain.id,recordId), HTTP.Method.get);
 }
 
-//  Delete a Domain Record
+///  Delete a Domain Record
 auto delRecord(OceanDomain domain, string recordId)
 {
     return domain.request(
         format("domains/%s/records/%s",domain.id,recordId), HTTP.Method.del);
 }
 
-//  Update a Domain Record
+///  Update a Domain Record
 auto updateRecord(OceanDomain domain, string recordId,string name)
 {
     JSONValue params;
@@ -252,12 +298,13 @@ auto updateRecord(OceanDomain domain, string recordId,string name)
 }
 
 
-// list all droplets
+/// list all droplets
 auto listDroplets(OceanAPI api)
 {
     return api.request("droplets",HTTP.Method.get);
 }
 
+///
 enum OceanRegion
 {
     ams2,
@@ -273,7 +320,9 @@ enum OceanRegion
 }
 
 
+///
 immutable string[] OceanRegions;
+///
 OceanRegion oceanRegion(string region)
 {
     OceanRegion ret;
@@ -282,6 +331,7 @@ OceanRegion oceanRegion(string region)
     return cast(OceanRegion)i;
 }
 
+///
 string toString(OceanRegion region)
 {
     final switch(region) with(OceanRegion)
@@ -310,6 +360,7 @@ string toString(OceanRegion region)
     assert(0);
 }
 
+///
 enum OceanDistro
 {
     CoreOS,
@@ -319,7 +370,9 @@ enum OceanDistro
     FreeBSD,
     Ubuntu,
 }
+///
 alias OceanImageId=Algebraic!(int,string);
+///
 struct OceanGlobalImage
 {
     bool isApplication=false;
@@ -328,9 +381,11 @@ struct OceanGlobalImage
     OceanDistro distro;
     string application;
 }
+///
 OceanGlobalImage[] OceanImages;
 
 
+///
 struct Droplet
 {
     OceanAPI api;
@@ -377,13 +432,14 @@ struct Droplet
     }
 }
 
-//  Makes an action
+///  Makes an action
 JSONValue action(Droplet droplet, DropletAction actionType,JSONValue params=JSONValue(null))
 {
     params["type"]=actionType.toString;
     return droplet.request(format("droplets/%s/actions",droplet.id), HTTP.Method.post, params);
 }
 
+///
 enum DropletAction
 {
     reboot,
@@ -404,6 +460,7 @@ enum DropletAction
     upgrade,
 }
 
+///
 string toString(DropletAction action)
 {
     final switch(action) with(DropletAction)
@@ -444,7 +501,10 @@ string toString(DropletAction action)
 }
 
 
+///
 immutable string[] DropletActions;
+
+///
 DropletAction dropletAction(string action)
 {
     auto i=DropletActions.countUntil(action);
@@ -452,12 +512,14 @@ DropletAction dropletAction(string action)
     return cast(DropletAction)i;
 }
 
+///
 struct OceanResult(T)
 {
     bool found;
     T result;
 }
-// find droplet ID from anme
+
+/// find droplet ID from anme
 OceanResult!Droplet findDroplet(OceanAPI ocean, string name)
 {
     auto ret=ocean.Droplet(-1);
@@ -478,20 +540,20 @@ OceanResult!Droplet findDroplet(OceanAPI ocean, string name)
     return OceanResult!Droplet(true,ocean.Droplet((*droplets).array[i].object["id"].integer.to!int));
 }
 
-//  List all available Kernels for a Droplet
+///  List all available Kernels for a Droplet
 auto kernels(Droplet droplet)
 {
     return droplet.request(format("droplets/%s/kernels",droplet.id), HTTP.Method.get);
 }
 
 
-//  Retrieve snapshots for a Droplet
+///  Retrieve snapshots for a Droplet
 auto snapshots(Droplet droplet)
 {
     return droplet.request(format("droplets/%s/snapshots",droplet.id), HTTP.Method.get);
 }
 
-//  Retrieve backups for a Droplet
+///  Retrieve backups for a Droplet
 auto backups(Droplet droplet)
 {
   return droplet.request(format("droplets/%s/backups",droplet.id), HTTP.Method.get);
@@ -503,60 +565,61 @@ auto actions(Droplet droplet)
     return droplet.request(format("droplets/%s/actions",droplet.id), HTTP.Method.get);
 }
 
-//  Retrieve an existing Droplet by id
+///  Retrieve an existing Droplet by id
 auto retrieve(Droplet droplet)
 {
     return droplet.request("droplets/"~droplet.id.to!string, HTTP.Method.get);
 }
 
-//  Delete a Droplet
+///  Delete a Droplet
 auto del(Droplet droplet)
 {
     return droplet.request("droplets/"~droplet.id.to!string, HTTP.Method.del);
 }
 
+///
 auto neighbours(Droplet droplet)
 {
     return droplet.request(format("droplets/%s/neighbors",droplet.id),HTTP.Method.get);
 }
 
-//  Reboot a Droplet
+///  Reboot a Droplet
 auto reboot(Droplet droplet)
 {
     return droplet.action(DropletAction.reboot);
 }
 
-//  Power Cycle a Droplet
+///  Power Cycle a Droplet
 auto powerCycle(Droplet droplet)
 {
     return droplet.action(DropletAction.powerCycle);
 }
 
-//  Shutdown a Droplet
+///  Shutdown a Droplet
 auto shutdown(Droplet droplet)
 {
     return droplet.action(DropletAction.shutdown);
 }
 
-//  Power Off a Droplet
+///  Power Off a Droplet
 auto powerOff(Droplet droplet)
 {
     return droplet.action(DropletAction.powerOff);
 }
 
-//  Power On a Droplet
+///  Power On a Droplet
 auto powerOn(Droplet droplet)
 {
     return droplet.action(DropletAction.powerOn);
 }
 
-//  Password Reset a Droplet
+///  Password Reset a Droplet
 auto passwordReset(Droplet droplet)
 {
     return droplet.action(DropletAction.passwordReset);
 }
 
-//  Resize a Droplet
+///  Resize a Droplet
 auto resize(Droplet droplet, string size)
 {
     JSONValue params;
@@ -564,7 +627,7 @@ auto resize(Droplet droplet, string size)
     return droplet.action(DropletAction.resize, params);
 }
 
-//  Restore a Droplet
+///  Restore a Droplet
 auto restore(Droplet droplet, string image)
 {
     JSONValue params;
@@ -572,7 +635,7 @@ auto restore(Droplet droplet, string image)
     return droplet.action(DropletAction.restore, params);
 }
 
-//  Rebuild a Droplet
+///  Rebuild a Droplet
 auto rebuild(Droplet droplet, string image)
 {
     JSONValue params;
@@ -580,7 +643,7 @@ auto rebuild(Droplet droplet, string image)
     return droplet.action(DropletAction.rebuild, params);
 }
 
-//  Rename a Droplet
+///  Rename a Droplet
 auto rename(OceanAPI api, Droplet droplet, string name)
 {
     JSONValue params;
@@ -588,7 +651,7 @@ auto rename(OceanAPI api, Droplet droplet, string name)
     return droplet.action(DropletAction.rename,params);
 }
 
-//  Change the Kernel
+///  Change the Kernel
 auto changeKernel(Droplet droplet, string kernel)
 {
     JSONValue params;
@@ -596,25 +659,25 @@ auto changeKernel(Droplet droplet, string kernel)
     return droplet.action(DropletAction.changeKernel, params);
 }
 
-//  Enable IPv6
+///  Enable IPv6
 auto enableIPv6(Droplet droplet)
 {
     return droplet.action(DropletAction.enableIPv6);
 }
 
-//  Disable Backups
+///  Disable Backups
 auto disableBackups(Droplet droplet)
 {
     return droplet.action(DropletAction.disableBackups);
 }
 
-//  Enable Private Networking
+///  Enable Private Networking
 auto enablePrivateNetworking(Droplet droplet)
 {
     return droplet.action(DropletAction.enablePrivateNetworking);
 }
 
-//  Snapshot
+///  Snapshot
 auto doSnapshot(Droplet droplet, string name=null)
 {
     JSONValue params;
@@ -623,19 +686,22 @@ auto doSnapshot(Droplet droplet, string name=null)
     return droplet.action(DropletAction.snapshot, params);
 }
 
-//  Retrieve a Droplet Action
+///  Retrieve a Droplet Action
 auto retrieveAction(Droplet droplet, string actionId)
 {
     return droplet.request(
         format("droplets/%s/actions/%s",droplet.id, actionId), HTTP.Method.get);
 }
 
+///
 auto upgrade(Droplet droplet)
 {
     JSONValue params;
     params["upgrade"]=true;
     droplet.action(DropletAction.upgrade,params);
 }
+
+///
 struct OceanImage
 {
     OceanAPI api;
@@ -651,25 +717,26 @@ struct OceanImage
         return api.request(uri,method,params);
     }
 }
-// List all images
+
+/// List all images
 auto listImages(OceanAPI api)
 {
     return api.request("images", HTTP.Method.get);
 }
 
-// Retrieve an existing Image by id or slug
+/// Retrieve an existing Image by id or slug
 auto get(OceanImage image)
 {
     return image.request("images/"~image.id, HTTP.Method.get);
 }
 
-//  Delete an Image
+///  Delete an Image
 auto del(OceanImage image)
 {
     return image.request("images/"~image.id, HTTP.Method.del);
 }
 
-//  Update an Image
+///  Update an Image
 auto update(OceanImage image, string name)
 {
     JSONValue params;
@@ -677,7 +744,7 @@ auto update(OceanImage image, string name)
     return image.request("images/"~image.id, HTTP.Method.put, params);
 }
 
-//  Transfer an Image
+///  Transfer an Image
 auto transfer(OceanImage image, OceanRegion region)
 {
     JSONValue params;
@@ -686,29 +753,32 @@ auto transfer(OceanImage image, OceanRegion region)
     return image.request(format("images/%s/actions",image.id), HTTP.Method.post,params);
 }
 
- // Retrieve an existing Image Action
-
+/// Retrieve an existing Image Action
 auto getImageAction(OceanImage image, string actionId)
 {
     return image.request(format("images/%s/actions/%s",image.id,actionId), HTTP.Method.get);
 }
 
+///
 struct OceanKey
 {
     OceanAPI api;
     string value;
 
+    ///
     this(OceanAPI api,string key)
     {
         this.api=api;
         this.value=key;
     }
+    
+    ///
     auto request(string uri, HTTP.Method method=HTTP.Method.get, JSONValue params=JSONValue(null))
     {
         return api.request(uri,method,params);
     }
 
-    // Create a new Key
+    /// Create a new Key
     static auto create(OceanAPI api, string name, string publicKey)
     {
         JSONValue params;
@@ -718,21 +788,20 @@ struct OceanKey
     }
 }
 
-// list all keys
+/// list all keys
 auto listKeys(OceanAPI api)
 {
     return api.request("account/keys", HTTP.Method.get);
 }
 
 
-// Retrieve an existing Key by Id or Fingerprint
-
+/// Retrieve an existing Key by Id or Fingerprint
 auto retrieve(OceanKey key)
 {
     return key.request("account/keys/"~key.value, HTTP.Method.get);
 }
 
-//  Update an existing Key by Id or Fingerprint
+/// Update an existing Key by Id or Fingerprint
 auto updateName(OceanKey key, string name)
 {
     JSONValue params;
@@ -740,20 +809,20 @@ auto updateName(OceanKey key, string name)
     return key.request("account/keys/"~key.value, HTTP.Method.put, params);
 }
 
-//  Destroy an existing Key by Id or Fingerprint
+///  Destroy an existing Key by Id or Fingerprint
 auto del(OceanKey key)
 {
     return key.request("account/keys/"~key.value, HTTP.Method.del);
 }
 
 
-// list all regions
+/// list all regions
 auto listRegions(OceanAPI api)
 {
    return api.request("regions", HTTP.Method.get);
 }
 
-// list all sizes
+/// list all sizes
 auto listSizes(OceanAPI api)
 {
     return api.request("sizes", HTTP.Method.get);
