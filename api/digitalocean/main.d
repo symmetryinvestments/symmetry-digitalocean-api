@@ -1,3 +1,4 @@
+///
 import kaleidic.api.digitalocean;
 import kaleidic.auth; // replace by your own key
 import kaleidic.helper.prettyjson;
@@ -5,6 +6,7 @@ import std.json;
 import std.stdio;
 
 
+///
 void main(string[] args)
 {
     auto ocean=OceanAPI(OceanAPIKey);
@@ -24,7 +26,7 @@ void main(string[] args)
 }
 
 
-/**
+/*
     really not tested
     so far: reasonable results for
     listDomains
