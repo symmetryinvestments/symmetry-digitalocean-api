@@ -1,7 +1,6 @@
 ///
-import kaleidic.api.digitalocean;
-import kaleidic.auth; // replace by your own key
-import kaleidic.helper.prettyjson;
+import symmetry.api.digitalocean;
+import symmetry.helper.prettyjson;
 import std.json;
 import std.stdio;
 
@@ -9,9 +8,10 @@ import std.stdio;
 ///
 void main(string[] args)
 {
-    auto ocean=OceanAPI(OceanAPIKey);
+	import std.process : environment;
+    auto ocean=OceanAPI(environment.get("DIGITALOCEAN_API_KEY",""));
     auto result=Droplet.create( ocean,
-                                "newemail.kaleidicassociates.com",
+                                "newemail.symmetry.ssociates.com",
                                 OceanRegion.lon1,
                                 "1Gb",
                                 OceanImageId("debian-8-x64"),
@@ -19,7 +19,7 @@ void main(string[] args)
     writefln(result.prettyPrint);
     auto actions=ocean.listDroplets;
     writefln(actions.prettyPrint);
-/*    auto droplet=ocean.findDroplet("hoelderlin.kaleidicassociates.com").result.retrieve;
+/*    auto droplet=ocean.findDroplet("hoelderlin.symmetry.ssociates.com").result.retrieve;
     writefln(droplet.prettyPrint);
     auto keys=ocean.listKeys;
     writefln(keys.prettyPrint);*/

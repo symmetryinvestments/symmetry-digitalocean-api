@@ -1,12 +1,10 @@
-/**
+/+
 
     Digital Ocean API
-    2014,2015,2016,2017 by Laeeth Isharc and Kaleidic Associates Advisory Limited
+    2014 - 2020 by Laeeth Isharc, Kaleidic Associates Advisory Limited, and Symmetry Investments
 
     ---
-        import kaleidic.api.digitalocean;
-        import kaleidic.auth.digitalocean; // replace by your own key
-        import kaleidic.helper.prettyjson;
+        import symmetry.api.digitalocean;
         import std.json;
         import std.stdio;
 
@@ -15,7 +13,7 @@
         {
             auto ocean=OceanAPI(OceanAPIKey);
             auto result=Droplet.create( ocean,
-                                        "newemail.kaleidicassociates.com",
+                                        "newemail.symmetry.ssociates.com",
                                         OceanRegion.lon1,
                                         "1Gb",
                                         OceanImageId("debian-8-x64"),
@@ -23,10 +21,10 @@
             writefln(result.prettyPrint);
             auto actions=ocean.listDroplets;
             writefln(actions.prettyPrint);
-        /*    auto droplet=ocean.findDroplet("hoelderlin.kaleidicassociates.com").result.retrieve;
+        /*    auto droplet=ocean.findDroplet("hoelderlin.symmetry.ssociates.com").result.retrieve;
             writefln(droplet.prettyPrint);
             auto keys=ocean.listKeys;
-            writefln(keys.prettyPrint);*/
+            writefln("%s",keys); */
         }
 
     ---
@@ -40,10 +38,10 @@
     listImages
     findDroplet
     Droplet.retrieve
-*/
++/
 
 ///
-module kaleidic.api.digitalocean;
+module symmetry.api.digitalocean;
 import std.stdio;
 import std.json;
 import std.net.curl;
@@ -54,8 +52,6 @@ import std.traits:EnumMembers;
 import std.array:array,appender;
 import std.format:format;
 import std.variant:Algebraic;
-import kaleidic.auth;
-import kaleidic.helper.prettyjson;
 
 /**
     Implemented in the D Programming Language 2015 by Laeeth Isharc and Kaleidic Associates
@@ -65,7 +61,7 @@ import kaleidic.helper.prettyjson;
 */
 
 ///
-static this()
+shared static this()
 {
     OceanRegions=[EnumMembers!OceanRegion].map!(a=>a.toString).array.assumeUnique;
     DropletActions=[EnumMembers!DropletAction].map!(a=>a.toString).array.assumeUnique;
@@ -522,11 +518,12 @@ struct OceanResult(T)
 /// find droplet ID from anme
 OceanResult!Droplet findDroplet(OceanAPI ocean, string name)
 {
+	import symmetry.helper.prettyjson;
     auto ret=ocean.Droplet(-1);
     auto dropletResults=ocean.listDroplets;
     auto droplets="droplets" in dropletResults;
     enforce(droplets !is null, new Exception("bad response from Digital Ocean: "~dropletResults.prettyPrint));
-    enforce((*droplets).type==JSON_TYPE.ARRAY, new Exception
+    enforce((*droplets).type==JSONType.array, new Exception
         ("bad response from Digital Ocean: "~dropletResults.prettyPrint));
     (*droplets).array.each!(a=>enforce(("name" in a.object) && a.object["name"].type==JSON_TYPE.STRING));
     auto i=(*droplets).array.map!(a=>a.object["name"].str).array.countUntil(name);

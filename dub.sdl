@@ -1,0 +1,17 @@
+name "symmetry-digitalocean-api"
+description "D Language implementation of Digital Ocean API."
+copyright "Copyright © 2015-20, Laeeth Isharc, Kaleidic Associates, Symmetry Investments and Digital Ocean"
+authors "Laeeth Isharc"
+targetType "library"
+libs "curl"
+
+configuration "library" {
+	sourceFiles "source/symmetry/api/digitalocean.d"
+	targetType "library"
+}
+configuration "tests" {
+	sourceFiles "./example/main.d" "source/symmetry/api/digitalocean.d"
+	targetType "executable"
+}
+
+
