@@ -4,6 +4,7 @@ copyright "Copyright © 2015-20, Laeeth Isharc, Kaleidic Associates, Symmetry In
 authors "Laeeth Isharc"
 targetType "library"
 libs "curl"
+license "MIT"
 
 configuration "library" {
 	sourceFiles "source/symmetry/api/digitalocean.d"
